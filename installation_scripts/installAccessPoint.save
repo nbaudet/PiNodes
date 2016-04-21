@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Source: https://frillip.com/using-your-raspberry-pi-3-as-a-wifi-access-point-with-hostapd/
+
+# Installs hostapd to transform the RaspberryPi 3 in a Wi-Fi access point
+sudo apt-get install -y dnsmasq hostapd
+
+echo "Installation done. Editing: /etc/dhcpcd.conf"
+
+var tmp =     static ip_address=172.24.1.1/24" >> /etc/dhcpcd.conf
+
+
+then
+	echo "# Static IP address for the Access Point
+interface wlan0
+    static ip_address=172.24.1.1/24" >> /etc/dhcpcd.conf
+else
+	echo "dhcpcd.conf was already modified"
+fi
+
+echo "Editing /etc/dhcpcd.conf done. Please check that wpa_supplicant is not active for wlan0 and that it is set to manual"
+
+echo "Restarting dhcpcd deamon..."
+sudo service dhcpcd restart
+
+echo "--------------------"
+
+echo "Configuration of hostapd"
+sudo cp hostapd_config /etc/hostapd/hostapd.conf
+
+# Should normally be commented...
+echo "Testing if it works"
+sudo /usr/sbin/hostapd /etc/hostapd/hostapd.conf
+
+
+echo "All done! Your Pi is now a Wi-Fi Access Point :)"
+

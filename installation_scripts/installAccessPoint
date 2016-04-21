@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# Source: https://frillip.com/using-your-raspberry-pi-3-as-a-wifi-access-point-with-hostapd/
+
+# Installs hostapd to transform the RaspberryPi 3 in a Wi-Fi access point
+echo "---CONFIGURE YOUR PI TO BE AN ACCESS POINT---"
+
+# Installs the required packages
+sudo apt-get install -y dnsmasq hostapd
+echo ">>> Installation done"
+
+# Edits the dhcp client configuration file
+# If our line is already at the end of the file, does nothing
+EDITED="$(awk '/./{line=$0} END{print line}' /etc/dhcpcd.conf)"
+if [ "$EDITED" == "    static ip_address=172.24.1.1/24" ]
+then
+	echo ">>> dhcpcd.conf was already modified"
+else
+sudo echo "# Static IP address for the Access Point
+interface wlan0
+    static ip_address=172.24.1.1/24" >> /etc/dhcpcd.conf
+    echo ">>> dhcpcd.conf modified"
+fi
+# Warning to deactivate wpa_supplicant for the embedded Wi-Fi
+echo "/!\ Please check in /etc/network/interfaces that wpa_supplicant is commented for wlan0 and that it is set to manual"
+echo "    When help needed check https://frillip.com/using-your-raspberry-pi-3-as-a-wifi-access-point-with-hostapd/"
+
+# Restarts the deamon with the new config
+echo ""
+echo ">>> Restarting dhcpcd deamon..."
+sudo service dhcpcd restart
+
+# Makes a backup and copies our access point config file in hostapd directdory
+echo "Copying configuration for the HostAP Deamon (hostapd)"
+sudo cp /etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf.bak
+sudo cp config_files/hostapd_config /etc/hostapd/hostapd.conf
+
+# Launching hostapd
+#echo "Launching the ACCESS POINT"
+#sudo /usr/sbin/hostapd /etc/hostapd/hostapd.conf&
+
+echo "_----CONFIGURATION PART-----"
+# Tell hostapd which config file to load on startup
+echo "Modify #DEAMON_CONF=\"\" to DAEMON_CONF=\"/etc/hostapd/hostapd.conf\" in file /etc/default/hostapd"
+read -n 1 -p "Press enter when ready"
+
+#Only makes a copy of original file if doesn't exist yet
+if [ ! -f "/etc/dnsmasq.conf.orig" ]
+then
+	sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig  
+else
+	:
+fi
+sudo cp config_files/dnsmasq.conf /etc/dnsmasq.conf  
+
+# Set up IPv4 forwarding
+echo "Uncomment the line net.ipv4.ip_forward=1 in /etc/sysctl.conf"
+read -n 1 -p "Press enter when ready"
+
+# Inputting rules for the current session
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE  
+sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT  
+sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT 
+
+# Saving the rules to file
+sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+
+# Copying the file
+sudo cp config_files/70-ipv4-nat /lib/dhcpcd/dhcpcd-hooks/70-ipv4-nat
+
+echo "All done! Your Pi is now a Wi-Fi Access Point :)"
+echo "Please reboot in order for the changes to take effect"

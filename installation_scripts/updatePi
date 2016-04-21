@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Takes updates from the repositories and installs them
+sudo apt-get -y update && sudo apt-get -y upgrade
