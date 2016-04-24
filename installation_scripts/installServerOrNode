@@ -1,0 +1,24 @@
+#!/bin/bash
+echo "---INSTALLING WEBSOCKET.IO FOR SERVER OR NODE---"
+
+nodeType=""
+
+echo "Which type of PiNodes are you installing, Server (s) or Node (n) ? :"
+read nodeType
+while true; do
+	if [[ $nodeType == "s" || $nodeType == "n" ]]
+	then
+		if [[ $nodeType == "s" ]]
+		then
+			cp packages.json/server/package.json ..
+		else
+			cp packages.json/client/package.json ..
+		fi
+		cd ..
+		npm install
+		break
+	else
+		echo "Didn't get that. Type 's' or 'n' then ENTER :"
+		read nodeType
+	fi
+done
