@@ -1,33 +1,39 @@
 #!/bin/bash
 
 echo "---INSTALLING NODEJS AND NPM---"
-fallbackVersion="4.4.3"
-versionUsed=""
-regex="[^\d{1}\.\d{1}\.\d{1}$]" # TODO: make it better (ie. accepts: 2)
+#fallbackVersion="4.4.3"
+#versionUsed=""
+#regex="[^\d{1}\.\d{1}\.\d{1}$]" # TODO: make it better (ie. accepts: 2)
 
 # Ask the user which version to install
-echo "Please navigate to https://nodejs.org/en/ and indicate the latest version of Node.js (ie. \"4.4.3\")"
-echo "Info : using armv6l as there is no armv8* version of linux core at the moment"
-echo "Type latest version (ie. 4.4.3), followed by [ENTER]:" 
-read version
+#echo "Please navigate to https://nodejs.org/en/ and indicate the latest version of Node.js (ie. \"4.4.3\")"
+#echo "Info : using armv6l as there is no armv8* version of linux core at the moment"
+#echo "Type latest version (ie. 4.4.3), followed by [ENTER]:" 
+#read version
 
 # Testing the version matches X.X.X regex where X is a number = [0-9]
-if [[ $version =~ $regex ]]
-then
-	echo "$version is OK!"
-	versionUsed="$version"
-else
-	echo "$fallbackVersion used"
-	versionUsed="$fallbackVersion"
-fi
+#if [[ $version =~ $regex ]]
+#then
+#	echo "$version is OK!"
+#	versionUsed="$version"
+#else
+#	echo "$fallbackVersion used"
+#	versionUsed="$fallbackVersion"
+#fi
 
 # Does the installation to /usr/local/
-echo ">>> Installing node-v$versionUsed"
+#echo ">>> Installing node-v$versionUsed"
 #wget https://nodejs.org/dist/v$versionUsed/node-v$versionUsed-linux-armv6l.tar.gz 
 #tar -xvf node-v$versionUsed-linux-armv6l.tar.gz 
 #cd node-v$versionUsed-linux-armv6l
 #sudo cp -R * /usr/local/
 #cd ..
+
+# Installing nodejs from node-arm.herokuapp.com
+echo ">>> Installing nodejs node-arm.herokuapp.com"
+wget http://node-arm.herokuapp.com/node_latest_armhf.deb 
+sudo dpkg -i node_latest_armhf.deb
+
 echo ">>> node version: "
 node -v
 
